@@ -157,7 +157,7 @@ Los casos anteriores se recuperan desde el panel lateral o con `GET /api/casos/:
 
 ## 7. Instalación y ejecución
 
-**Requisitos:** Node.js 18 o superior, una clave de [Google AI Studio](https://aistudio.google.com/apikey) y una clave de [Geoapify](https://www.geoapify.com/). Se necesita **internet incluso si se ejecuta en localhost**, porque las API externas se consultan en línea.
+**Requisitos:** Node.js 22 o superior (se recomienda Node.js 22 LTS para reproducir el entorno probado), una clave de [Google AI Studio](https://aistudio.google.com/apikey) y una clave de [Geoapify](https://www.geoapify.com/). Se necesita **internet incluso si se ejecuta en localhost**, porque las API externas se consultan en línea.
 
 ### Windows (PowerShell)
 

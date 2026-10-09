@@ -15,7 +15,14 @@ const EXT = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' }
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 4 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => cb(null, !!EXT[file.mimetype]),
+  fileFilter: (req, file, cb) => {
+    if (!EXT[file.mimetype]) {
+      const error = new Error('Formato de imagen no permitido. Adjunta un archivo JPG, PNG o WebP.');
+      error.status = 400;
+      return cb(error);
+    }
+    cb(null, true);
+  },
 });
 
 const app = express();
@@ -68,6 +75,12 @@ app.post('/api/casos/:id/chat', async (req, res, next) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: 'La imagen supera el límite de 4 MB. Selecciona una imagen más pequeña.' });
+    }
+    return res.status(400).json({ error: 'No se pudo adjuntar la imagen. Comprueba el archivo e inténtalo de nuevo.' });
+  }
   res.status(err.status || 500).json({ error: err.message || 'Error interno' });
 });
 
