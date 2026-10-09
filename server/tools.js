@@ -6,6 +6,9 @@ const CATEGORIAS_PROPIAS = db.prepare('SELECT DISTINCT categoria FROM servicios'
 const TIPOS_CON_GEO = TIPOS.filter((t) => t.categoria_geoapify).map((t) => t.clave);
 export const MODOS = ['walk', 'bicycle', 'drive', 'transit'];
 
+// Evita mostrar 0 minutos para recorridos con duración positiva inferior a 60 s.
+const minutosEstimados = (segundos) => segundos > 0 ? Math.max(1, Math.round(segundos / 60)) : 0;
+
 // Clasificación conservadora: alquiler o estacionamiento NO equivale a reparación.
 export function requiereTallerBici(analisis) {
   if (analisis?.tipo_necesidad !== 'bicicleta') return false;
@@ -89,7 +92,7 @@ export function crearContexto({ casoId, origen, traza, candidatos = [] }) {
 const compacto = (c) => ({
   id: c.id, nombre: c.nombre, categoria: c.categoria, fuente: c.fuente,
   distancia_m: c.distancia_m, horario: c.horario, accesible: c.accesible, notas: c.notas,
-  ruta: c.ruta ? { modo: c.ruta.modo, distancia_m: c.ruta.distancia_m, tiempo_min: Math.round(c.ruta.tiempo_s / 60) } : undefined,
+  ruta: c.ruta ? { modo: c.ruta.modo, distancia_m: c.ruta.distancia_m, tiempo_min: minutosEstimados(c.ruta.tiempo_s) } : undefined,
 });
 export { compacto };
 
@@ -159,7 +162,7 @@ const EJECUTORES = {
     const cand = ctx.candidatos.get(a.destino_id);
     if (!cand) return { error: 'destino_id no existe. Use solo ids devueltos por otras herramientas.' };
     const r = await asegurarRuta(ctx, cand, a.modo);
-    return { destino_id: cand.id, modo: r.modo, distancia_m: r.distancia_m, tiempo_min: Math.round(r.tiempo_s / 60) };
+    return { destino_id: cand.id, modo: r.modo, distancia_m: r.distancia_m, tiempo_min: minutosEstimados(r.tiempo_s) };
   },
 
   async guardar_recomendacion(ctx, a) {
@@ -195,7 +198,7 @@ const EJECUTORES = {
     const r = await asegurarRuta(ctx, cand, a.modo);
     const accionId = addAccion(ctx.casoId, 'ruta_guardada', {
       destino_id: cand.id, destino: cand.nombre, modo: r.modo,
-      distancia_m: r.distancia_m, tiempo_min: Math.round(r.tiempo_s / 60), nota: a.nota || '',
+      distancia_m: r.distancia_m, tiempo_min: minutosEstimados(r.tiempo_s), nota: a.nota || '',
     }, 'agente_chat');
     return { ok: true, accion_id: accionId };
   },

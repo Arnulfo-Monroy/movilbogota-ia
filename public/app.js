@@ -55,13 +55,19 @@ function mostrarTab(nombre) {
 document.querySelectorAll('.pestanas button').forEach((b) => b.addEventListener('click', () => mostrarTab(b.dataset.tab)));
 
 const km = (m) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`);
-const minutos = (s) => `${Math.round(s / 60)} min`;
+const minutos = (s) => {
+  const segundos = Number(s);
+  if (!Number.isFinite(segundos) || segundos < 0) return 'No disponible';
+  return segundos < 60 ? 'menos de 1 min' : `${Math.round(segundos / 60)} min`;
+};
 
 // ---------- Renderizado del caso ----------
 function renderResultado(d) {
   const { caso, acciones } = d;
   const a = caso.analisis, r = caso.resultado;
-  let html = `<p><span class="insignia ${esc(caso.estado)}">${esc(ESTADOS[caso.estado] || caso.estado)}</span> Caso #${caso.id} · ${esc(caso.creado_en)}</p>`;
+  const etiquetaEstado = caso.estado === 'requiere_aclaracion' && a?.estado_informacion === 'contradictoria'
+    ? 'Información contradictoria' : (ESTADOS[caso.estado] || caso.estado);
+  let html = `<p><span class="insignia ${esc(caso.estado)}">${esc(etiquetaEstado)}</span> Caso #${caso.id} · ${esc(caso.creado_en)}</p>`;
   html += `<p>${esc(caso.texto)}</p>`;
   if (caso.imagen_path) html += `<img src="${esc(caso.imagen_path)}" alt="Imagen adjunta al caso" style="max-height:120px;border-radius:6px">`;
   if (caso.error) html += `<div class="aviso"><b>No se pudo completar el análisis.</b><br>${esc(caso.error)}</div>`;
@@ -142,6 +148,15 @@ $('#imagen').addEventListener('change', (e) => {
   const f = e.target.files[0], img = $('#vista-previa');
   if (!f) { img.hidden = true; return; }
   img.src = URL.createObjectURL(f); img.hidden = false;
+});
+
+// Si el usuario escribe una dirección después de compartir GPS, se usa su nuevo origen.
+$('#origen').addEventListener('input', () => {
+  if (!gps) return;
+  gps = null;
+  const info = $('#gps-info');
+  info.hidden = false;
+  info.textContent = 'Se usará la dirección escrita en vez del GPS anterior.';
 });
 
 $('#btn-gps').addEventListener('click', () => {

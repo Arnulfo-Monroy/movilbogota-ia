@@ -32,6 +32,7 @@ textarea { resize: vertical; }
 .fila input { flex: 1; min-width: 0; }
 .nota { font-size: .85rem; color: var(--suave); margin: 6px 0 0; }
 #vista-previa { display: block; max-width: 100%; max-height: 140px; margin-top: 8px; border-radius: 6px; border: 1px solid var(--linea); }
+#vista-previa[hidden] { display: none; }
 
 button { font: inherit; cursor: pointer; border-radius: 6px; padding: 9px 14px; border: 1px solid transparent; }
 .primario { background: var(--taxi); color: var(--asfalto); font-weight: 700; margin-top: 18px; width: 100%; }

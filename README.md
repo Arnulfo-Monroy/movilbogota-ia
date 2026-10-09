@@ -65,7 +65,7 @@ La documentación coincide con el código: cada elemento anterior corresponde a 
 
 ## 3. Modelo de IA y servicio de geolocalización: decisiones
 
-### Modelo: Google Gemini (`gemini-2.5-flash` por defecto)
+### Modelo: Google Gemini (`gemini-3.5-flash-lite` en la configuración de ejemplo)
 
 | Criterio | Justificación |
 |---|---|
@@ -157,48 +157,70 @@ Los casos anteriores se recuperan desde el panel lateral o con `GET /api/casos/:
 
 ## 7. Instalación y ejecución
 
-**Requisitos:** Node.js 18 o superior, una clave de [Google AI Studio](https://aistudio.google.com/apikey) y una clave de [Geoapify](https://www.geoapify.com/).
+**Requisitos:** Node.js 18 o superior, una clave de [Google AI Studio](https://aistudio.google.com/apikey) y una clave de [Geoapify](https://www.geoapify.com/). Se necesita **internet incluso si se ejecuta en localhost**, porque las API externas se consultan en línea.
+
+### Windows (PowerShell)
+
+```powershell
+git clone https://github.com/Arnulfo-Monroy/movilbogota-ia.git
+cd movilbogota-ia
+npm install
+Copy-Item env.example .env
+# Abra .env y configure GEMINI_API_KEY y GEOAPIFY_API_KEY
+npm start
+```
+
+Para quien ya tiene el proyecto y su archivo `.env` configurado, **no ejecute de nuevo `Copy-Item` para sustituirlo**. Mantenga la base de datos local en `data/app.db` si desea conservar el historial.
+
+### macOS / Linux
 
 ```bash
-git clone <URL-DEL-REPOSITORIO>
-cd movilbogota
+git clone https://github.com/Arnulfo-Monroy/movilbogota-ia.git
+cd movilbogota-ia
 npm install
-cp env.example .env        # en Windows: copy env.example .env
+cp env.example .env
 # Edite .env y complete GEMINI_API_KEY y GEOAPIFY_API_KEY
 npm start
 ```
 
-Abra `http://localhost:3000`. La base de datos `data/app.db` se crea sola en el primer arranque.
+Abra **http://localhost:3000**. La base SQLite (`data/app.db`) se crea automáticamente en el primer arranque. Visite **http://localhost:3000/api/estado** para comprobar si las variables de entorno fueron cargadas; esta verificación no prueba por sí sola que las API externas respondan.
 
-**Variables de entorno** (`env.example`, sin credenciales reales):
+**Modelo de IA:** `env.example` incluye `gemini-3.5-flash-lite`, que respondió en las pruebas realizadas para esta entrega. La disponibilidad y las cuotas dependen de cada cuenta y pueden cambiar; si falla, consulte en Google AI Studio los modelos que admiten `generateContent` y ajuste `GEMINI_MODEL` en `.env`.
+
+**Variables de entorno** (en `env.example`, sin credenciales reales):
 
 | Variable | Uso |
 |---|---|
-| `GEMINI_API_KEY` | Clave del modelo |
-| `GEMINI_MODEL` | Modelo a usar (por defecto `gemini-2.5-flash`) |
-| `GEOAPIFY_API_KEY` | Clave del servicio de mapas |
-| `PORT` | Puerto (3000) |
-| `DB_PATH` | Ruta de la base SQLite |
+| `GEMINI_API_KEY` | Clave privada de Gemini |
+| `GEMINI_MODEL` | Modelo de IA (ejemplo: `gemini-3.5-flash-lite`) |
+| `GEOAPIFY_API_KEY` | Clave privada de Geoapify |
+| `PORT` | Puerto local (3000 por defecto) |
+| `DB_PATH` | Ruta de SQLite |
 
-Nunca suba el archivo `.env`; ya está en `.gitignore`.
+**Privacidad:** nunca publique `.env`, la base de datos con casos reales ni las imágenes subidas. `.gitignore` excluye estos archivos. Si configura nuevos equipos, cada persona debe usar sus propias claves de API.
 
 ---
 
-## 8. Guion de demostración
+## 8. Demostración y evidencias
 
-1. **Caso completo:** texto "Se me pinchó la llanta de la bicicleta, necesito un taller", origen "Carrera 7 con calle 45", modo bicicleta y una foto de una llanta. Mostrar análisis estructurado, candidatos, mapa, recomendación y acción guardada.
-2. **Información insuficiente:** enviar "necesito ayuda" sin origen. El sistema pide aclaración y no consulta herramientas.
-3. **Contradicción:** texto sobre una farmacia con la foto de un paisaje.
-4. **Fuera de alcance:** una pregunta no relacionada con movilidad.
-5. **Chat:** "¿Cuánto tardo a pie?" (usa `calcular_ruta`) y "Guarda esa ruta" (ejecuta la acción).
-6. **Trazabilidad:** abrir "Cómo se obtuvo" y explicar qué agente y qué herramienta intervinieron.
+Se permite una sustentación **local desde el portátil** (comunicación de la docente del 8 de octubre de 2026). El repositorio contiene el código y no requiere una URL de despliegue. Para la demostración hay que tener conectividad a Gemini y Geoapify.
+
+1. **Caso con resultados reales:** pedir "Necesito encontrar una farmacia cercana al Museo del Oro en Bogotá. Quiero llegar caminando". Origen: "Museo del Oro, Bogotá, Colombia"; modo "a pie". Mostrar geocodificación, candidatos, ruta y acción guardada.
+2. **Multimodalidad:** enviar texto sobre una llanta de bicicleta desinflada y adjuntar una fotografía relacionada. Verificar el objeto `hallazgos_imagen` y la traza del Agente Analista. Si el origen escrito no puede ubicarse con confianza suficiente, usar un lugar reconocido o GPS del usuario con permiso.
+3. **Información insuficiente:** solicitar una ruta sin destino; el sistema pregunta a dónde se desea llegar.
+4. **Contradicción:** describir un carro averiado y adjuntar una fotografía de la rueda de una bicicleta; el sistema debe solicitar aclaración.
+5. **Fuera de alcance:** pedir una receta de cocina; la aplicación no debe recomendar lugares.
+6. **Chat y acciones:** consultar alternativas y guardar una ruta, mostrando su `accion_id`.
+7. **Persistencia:** reiniciar `npm start`, recuperar el caso y consultar "Cómo se obtuvo" para mostrar las herramientas y los agentes involucrados.
+
+Los casos registrados durante el desarrollo no se incluyen en el repositorio porque la base de datos e imágenes locales se excluyen de Git. Las pruebas manuales documentadas están en [`docs/PRUEBAS_MANUALES.md`](docs/PRUEBAS_MANUALES.md).
 
 ---
 
 ## 9. Limitaciones conocidas
 
-- Los **datos propios** son un catálogo de demostración: los nombres con "(demo)" son ficticios y las coordenadas son aproximadas. Los horarios no están verificados.
-- No se consultan tráfico, tarifas ni disponibilidad en tiempo real.
+- Los **datos propios** son un catálogo de demostración: los nombres con "(demo)" son ficticios y las coordenadas son aproximadas. Sus horarios son datos de prueba, no horarios verificados. No deben presentarse como establecimientos reales.
+- Geoapify Places indica lugares y Geoapify Routing calcula rutas, pero no confirma por sí solo que un negocio esté abierto o preste un servicio concreto. No se consultan tráfico, tarifas ni disponibilidad en tiempo real. Las intersecciones imprecisas pueden requerir aclaración o GPS.
 - Las teselas del mapa usan el servidor público de OpenStreetMap, adecuado para desarrollo y demostración; para producción debe usarse un proveedor de teselas propio o contratado.
 - Las salidas de un modelo de lenguaje pueden contener errores; por eso la aplicación calcula distancias y rutas con herramientas y muestra la fuente de cada dato.
 - No hay autenticación de usuarios; es un prototipo académico.
@@ -207,6 +229,7 @@ Nunca suba el archivo `.env`; ya está en `.gitignore`.
 
 ```
 ├── README.md
+├── docs/PRUEBAS_MANUALES.md
 ├── env.example
 ├── package.json
 ├── server/
