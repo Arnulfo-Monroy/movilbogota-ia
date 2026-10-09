@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MovilBogotá · Asistente de movilidad y servicios urbanos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="lateral">
+      <header>
+        <h1>MovilBogotá</h1>
+        <p class="sub">Cuéntanos qué necesitas y desde dónde sales. Buscamos opciones reales cerca de ti.</p>
+        <p id="estado-servicios" class="estado-servicios" role="status"></p>
+      </header>
+
+      <form id="form-caso">
+        <label for="texto">¿Qué necesitas?</label>
+        <textarea id="texto" rows="4" maxlength="2000" required
+          placeholder="Ej.: Se me pinchó la llanta de la bicicleta y necesito un taller que abra hoy"></textarea>
+
+        <label for="imagen">Imagen del caso (opcional)</label>
+        <input type="file" id="imagen" accept="image/jpeg,image/png,image/webp">
+        <img id="vista-previa" alt="Vista previa de la imagen adjunta" hidden>
+
+        <label for="origen">Punto de origen</label>
+        <div class="fila">
+          <input type="text" id="origen" maxlength="200" placeholder="Ej.: Carrera 7 con calle 45">
+          <button type="button" id="btn-gps" class="secundario">Usar mi ubicación</button>
+        </div>
+        <p id="gps-info" class="nota" hidden></p>
+
+        <label for="modo">Cómo te mueves</label>
+        <select id="modo">
+          <option value="no_especificado">Sin preferencia</option>
+          <option value="a_pie">A pie</option>
+          <option value="bicicleta">Bicicleta</option>
+          <option value="auto">Auto</option>
+          <option value="transporte_publico">Transporte público</option>
+        </select>
+
+        <button type="submit" id="btn-enviar" class="primario">Analizar caso</button>
+      </form>
+
+      <section class="historial">
+        <h2>Casos anteriores</h2>
+        <ul id="lista-casos"></ul>
+      </section>
+    </aside>
+
+    <main class="principal">
+      <div id="mapa" aria-label="Mapa del caso"></div>
+
+      <div class="panel">
+        <nav class="pestanas" role="tablist">
+          <button role="tab" data-tab="resultado" class="activa">Resultado</button>
+          <button role="tab" data-tab="chat">Chat del caso</button>
+          <button role="tab" data-tab="traza">Cómo se obtuvo</button>
+        </nav>
+
+        <div id="tab-resultado" class="contenido">
+          <p class="vacio">Aún no hay un caso abierto. Completa el formulario o elige uno anterior.</p>
+        </div>
+
+        <div id="tab-chat" class="contenido" hidden>
+          <div id="mensajes" class="mensajes" aria-live="polite"></div>
+          <form id="form-chat" class="fila">
+            <input type="text" id="pregunta" maxlength="1000" placeholder="Pregunta algo sobre este caso" autocomplete="off" disabled>
+            <button type="submit" class="primario" id="btn-chat" disabled>Enviar</button>
+          </form>
+        </div>
+
+        <div id="tab-traza" class="contenido" hidden></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
